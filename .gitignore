@@ -11,3 +11,9 @@ dist/
 
 # virtualenv
 .venv/
+
+# game resources
+resources/*
+
+# development versions of third party packages
+third_party
