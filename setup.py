@@ -18,6 +18,7 @@ setup(
     install_requires=[
         'pygame',
         'mpq',
+        'av',
     ],
 
     license='GPLv3',
