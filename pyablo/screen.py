@@ -3,7 +3,6 @@ This module provides management methods for the pygame screen
 '''
 
 import pygame
-from pyablo.util import Rect
 
 class Screen(object):
     '''
@@ -17,9 +16,10 @@ class Screen(object):
         pygame.init()
 
         self._fps = 60
-        self._resolution = Rect(640, 480)
-        self._screen = pygame.display.set_mode(self._resolution.size)
         self._clock = pygame.time.Clock()
+
+        self._screen = None
+        self.size = (640, 480)
 
     @property
     def fps(self):
@@ -34,6 +34,20 @@ class Screen(object):
         set the current fps limit
         '''
         self._fps = value
+
+    @property
+    def size(self):
+        '''
+        get the current screen resolution
+        '''
+        return (self._screen.get_width(), self._screen.get_height())
+
+    @size.setter
+    def size(self, value):
+        '''
+        set the current screen resolution
+        '''
+        self._screen = pygame.display.set_mode(value)
 
     def sound(self, samples):
         '''
@@ -50,10 +64,10 @@ class Screen(object):
         surface = pygame.image.frombuffer(frame, rect.size, 'RGB')
 
         if scaled:
-            rect = rect.scaled_to(self._resolution)
+            rect = rect.scaled_to(self.size)
             surface = pygame.transform.smoothscale(surface, rect.size)
         if centered:
-            rect = rect.centered_in(self._resolution)
+            rect = rect.centered_in(self.size)
 
         self._screen.blit(surface, rect.offset)
 

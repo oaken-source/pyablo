@@ -51,7 +51,7 @@ class Cutscene(object):
                 if event.type == pygame.QUIT:
                     raise QuitGame()
                 elif event.type == pygame.VIDEORESIZE:
-                    self._screen = pygame.display.set_mode(event.dict['size'])
+                    screen.size = event.dict['size']
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     sound.stop()
                     return

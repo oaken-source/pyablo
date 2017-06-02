@@ -47,24 +47,24 @@ class Rect(object):
         '''
         return (self._left, self._top)
 
-    def scaled_to(self, other):
+    def scaled_to(self, size):
         '''
         scale the given rect to the given other, while maintaining aspect ratio
         '''
-        factor = min(other.width / self._width, other.height / self._height)
+        factor = min(size[0] / self._width, size[1] / self._height)
         return Rect(
             self._left,
             self._top,
             round(self._width * factor),
             round(self._height * factor))
 
-    def centered_in(self, other):
+    def centered_in(self, size):
         '''
         produce the offset to center the given rect in self
         '''
         return Rect(
-            round((other.width - self._width) / 2),
-            round((other.height - self._height) / 2),
+            round((size[0] - self._width) / 2),
+            round((size[1] - self._height) / 2),
             self._width,
             self._height)
 
@@ -73,4 +73,7 @@ class Rect(object):
 
 
 class QuitGame(Exception):
+    '''
+    raised to cleanly exit the game
+    '''
     pass
