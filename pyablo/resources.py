@@ -6,6 +6,7 @@ import mpq
 
 
 _ERROR_UNITIALIZED = 'Resources.open called, but resource store uninitialized.'
+_ERROR_OPEN_FAILED = 'unable to open resources file - incomplete installation?'
 
 
 _NAMED_RESOURCES = {
@@ -25,7 +26,10 @@ class Resources(object):
         '''
         Load the game resources from the mpq file
         '''
-        cls._mpq = mpq.MPQFile(path)
+        try:
+            cls._mpq = mpq.MPQFile(path)
+        except OSError as ex:
+            raise OSError(_ERROR_OPEN_FAILED) from ex
 
     @classmethod
     def open(cls, resource):
