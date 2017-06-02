@@ -18,10 +18,9 @@ def main():
     # initialize pygame
     screen = Screen()
 
-    # play blizzard logo
-    Cutscene(Resources.open('File00002910.smk')).play(screen)
-    # play opening cinematics
-    Cutscene(Resources.open('File00001475.smk')).play(screen)
+    # play intro
+    Cutscene(Resources.open('intro_logos.smk')).play(screen)
+    Cutscene(Resources.open('intro_cinematic.smk')).play(screen)
 
     raise NotImplementedError('it ends here')
 

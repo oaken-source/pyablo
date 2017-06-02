@@ -5,7 +5,13 @@ This module provides game resource handling used by pyablo
 import mpq
 
 
-ERROR_UNITIALIZED = 'Resources.open called, but resource store uninitialized.'
+_ERROR_UNITIALIZED = 'Resources.open called, but resource store uninitialized.'
+
+
+_NAMED_RESOURCES = {
+    'intro_logos.smk':          'File00002910.smk',
+    'intro_cinematic.smk':      'File00001475.smk',
+}
 
 
 class Resources(object):
@@ -26,7 +32,10 @@ class Resources(object):
         '''
         return the queried resource
         '''
+        if resource in _NAMED_RESOURCES:
+            resource = _NAMED_RESOURCES[resource]
+
         try:
             return cls._mpq.open(resource)
         except AttributeError as ex:
-            raise ValueError(ERROR_UNITIALIZED) from ex
+            raise ValueError(_ERROR_UNITIALIZED) from ex
