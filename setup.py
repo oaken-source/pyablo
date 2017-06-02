@@ -22,9 +22,10 @@ setup(
     },
 
     install_requires=[
-        'pygame',
-        'mpq',
         'av',
+        'mpq',
+        'numpy',
+        'pygame',
     ],
 
     license='GPLv3',
