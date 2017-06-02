@@ -8,12 +8,18 @@ setup(
     version='0.1',
     maintainer='Andreas Grapentin',
     maintainer_email='andreas@grapentin.org',
-    url='',
-    description='A(nother) free implementation of the Diablo engine',
+    url='https://github.com/oaken-source/pyablo',
+    description='A(nother) free implementation of the Diablo game engine',
     long_description=open(join(dirname(__file__), 'README.rst')).read(),
 
     keywords='diablo game',
     packages=['pyablo'],
+
+    entry_points={
+        'console_scripts': [
+            'pyablo = pyablo.__main__:main',
+        ],
+    },
 
     install_requires=[
         'pygame',
