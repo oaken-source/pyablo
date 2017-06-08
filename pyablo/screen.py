@@ -3,6 +3,8 @@ This module provides management methods for the pygame screen
 '''
 
 import pygame
+from pyablo.util import Rect
+
 
 class Screen(object):
     '''
@@ -57,12 +59,11 @@ class Screen(object):
         sound.play()
         return sound
 
-    def show(self, frame, rect, scaled=False, centered=False):
+    def show(self, surface, scaled=False, centered=False):
         '''
         display the given frame data on the screen
         '''
-        surface = pygame.image.frombuffer(frame, rect.size, 'RGB')
-
+        rect = Rect(surface.get_width(), surface.get_height())
         if scaled:
             rect = rect.scaled_to(self.size)
             surface = pygame.transform.smoothscale(surface, rect.size)

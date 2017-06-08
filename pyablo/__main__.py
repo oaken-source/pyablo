@@ -2,6 +2,7 @@
 This module is the entry point of pyablo
 '''
 
+import pygame
 from pyablo.resources import Resources
 from pyablo.video import Cutscene
 from pyablo.screen import Screen
@@ -21,6 +22,20 @@ def main():
     # play intro
     Cutscene(Resources.open('intro_logos.smk')).play(screen)
     Cutscene(Resources.open('intro_cinematic.smk')).play(screen)
+
+    # display splash screen
+    Screen.fps = 30
+    frame = pygame.image.load(Resources.open('intro_splash.pcx')).convert()
+    screen.show(frame, scaled=True, centered=True)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                raise QuitGame()
+            elif event.type == pygame.VIDEORESIZE:
+                screen.size = event.dict['size']
+                screen.show(frame, scaled=True, centered=True)
+
+        screen.flip()
 
     raise NotImplementedError('it ends here')
 

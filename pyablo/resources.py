@@ -10,8 +10,11 @@ _ERROR_OPEN_FAILED = 'unable to open resources file - incomplete installation?'
 
 
 _NAMED_RESOURCES = {
+    # video files
     'intro_logos.smk':          'File00002910.smk',
     'intro_cinematic.smk':      'File00001475.smk',
+    # image files
+    'intro_splash.pcx':         'File00000000.pcx',
 }
 
 

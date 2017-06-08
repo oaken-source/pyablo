@@ -52,9 +52,10 @@ class Cutscene(object):
                     raise QuitGame()
                 elif event.type == pygame.VIDEORESIZE:
                     screen.size = event.dict['size']
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                elif event.type == pygame.KEYUP or event.type == pygame.MOUSEBUTTONUP:
                     sound.stop()
                     return
 
-            screen.show(frame, self._size, scaled=True, centered=True)
+            surface = pygame.image.frombuffer(frame, self._size.size, 'RGB')
+            screen.show(surface, scaled=True, centered=True)
             screen.flip()
