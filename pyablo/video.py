@@ -1,63 +1,71 @@
 '''
-This module provides methods for cutscene handling and playback
+This module provides methods for video handling
 '''
 
-import sys
 import av
 import pygame
-from pyablo.util import Rect
+from pyablo.geometry import Rect
 
 
-class Cutscene(object):
+class Video(object):
     '''
     a helper class for dealing with cutscenes
     '''
-    def __init__(self, resource):
+    def __init__(self, resource, fps=15):
         '''
-        constructor - store the given resource for later use
+        constructor - decode audio and video
         '''
         self._resource = resource
-        self._size = None
+        self._fps = fps
 
-    def _frames(self):
-        '''
-        a generator for the frames of the video as numpy arrays
-        '''
+        # decode the audio stream
         self._resource.seek(0)
         data = av.open(self._resource)
-        self._size = Rect(data.streams.video[0].format.width, data.streams.video[0].format.height)
-        for frame in data.decode(video=0):
-            yield frame.to_nd_array(format='rgb24')
 
-    def _audio(self):
-        '''
-        produce the audio track of the video as mono numpy array
-        '''
         fifo = av.AudioFifo()
-        data = av.open(self._resource)
         for frame in data.decode(audio=0):
             fifo.write(frame)
 
         resampler = av.AudioResampler(format='s16p', layout='mono')
-        return resampler.resample(fifo.read()).to_nd_array()[0]
+        self._audio = pygame.mixer.Sound(
+            resampler.resample(fifo.read()).to_nd_array()[0])
 
-    def play(self, screen):
-        '''
-        play the cutscene in the given screen
-        '''
-        screen.fps = 15
-        sound = screen.sound(self._audio())
-        for frame in self._frames():
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    sys.exit(0)
-                elif event.type == pygame.VIDEORESIZE:
-                    screen.size = event.dict['size']
-                elif (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE
-                      or event.type == pygame.MOUSEBUTTONUP):
-                    sound.stop()
-                    return
+        # decode the video stream
+        self._resource.seek(0)
+        data = av.open(self._resource)
 
-            surface = pygame.image.frombuffer(frame, self._size.size, 'RGB')
-            screen.show(surface, scaled=True, centered=True)
-            screen.flip()
+        self._size = Rect(data.streams.video[0].format.width, data.streams.video[0].format.height)
+        self._frames = (
+            pygame.image.frombuffer(
+                frame.to_nd_array(format='rgb24'),
+                self._size.size,
+                'RGB')
+            for frame in data.decode(video=0))
+
+    @property
+    def fps(self):
+        '''
+        produce the fps of the video
+        '''
+        return self._fps
+
+    @property
+    def frames(self):
+        '''
+        a generator for the frames of the video as numpy arrays
+        '''
+        return self._frames
+
+    @property
+    def audio(self):
+        '''
+        produce the audio track of the video as mono numpy array
+        '''
+        return self._audio
+
+    @property
+    def size(self):
+        '''
+        produce the size of the video
+        '''
+        return self._size

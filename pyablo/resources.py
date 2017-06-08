@@ -3,6 +3,8 @@ This module provides game resource handling used by pyablo
 '''
 
 import mpq
+from pyablo.video import Video
+from pyablo.image import Image
 
 
 _ERROR_UNITIALIZED = 'Resources.open called, but resource store uninitialized.'
@@ -25,7 +27,7 @@ class Resources(object):
     _mpq = None
 
     @classmethod
-    def init(cls, path):
+    def load(cls, path):
         '''
         Load the game resources from the mpq file
         '''
@@ -35,9 +37,9 @@ class Resources(object):
             raise OSError(_ERROR_OPEN_FAILED) from ex
 
     @classmethod
-    def open(cls, resource):
+    def _open(cls, resource):
         '''
-        return the queried resource
+        return the queried resource as a file-like object
         '''
         if resource in _NAMED_RESOURCES:
             resource = _NAMED_RESOURCES[resource]
@@ -46,3 +48,16 @@ class Resources(object):
             return cls._mpq.open(resource)
         except AttributeError as ex:
             raise ValueError(_ERROR_UNITIALIZED) from ex
+
+    @classmethod
+    def open(cls, resource):
+        '''
+        return the queried resource as a game object
+        '''
+        res = cls._open(resource)
+
+        if resource.endswith('.smk'):
+            return Video(res)
+        elif resource.endswith('.pcx'):
+            return Image(res)
+        return res

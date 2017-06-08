@@ -2,28 +2,31 @@
 This module provides management methods for the pygame screen
 '''
 
+import sys
 import pygame
-from pyablo.util import Rect
+from pyablo.geometry import Rect
 
 
 class Screen(object):
     '''
     manage the pygame screen
     '''
-    def __init__(self):
+    def __init__(self, title='pygame'):
         '''
         constructor - initialize pygame and create the screen
         '''
         pygame.mixer.pre_init(channels=1)
         pygame.init()
+        pygame.display.set_caption(title)
 
         self._fps = 60
         self._clock = pygame.time.Clock()
 
+        self._native = (640, 480)
+
+        self._surface = pygame.surface.Surface(self._native)
         self._window = None
-        self._screen = None
-        self._screensize = None
-        self.size = (640, 480)
+        self.size = self._native
 
     @property
     def fps(self):
@@ -42,46 +45,78 @@ class Screen(object):
     @property
     def size(self):
         '''
-        get the current screen resolution
+        get the current window resolution
         '''
-        return (self._screen.get_width(), self._screen.get_height())
+        return self._window.get_size()
 
     @size.setter
     def size(self, value):
         '''
-        set the current screen resolution
+        set the current window resolution
         '''
-        rect = Rect(640, 480).scaled_to(value).centered_in(value)
-
         self._window = pygame.display.set_mode(value)
-        self._screen = pygame.surface.Surface(rect.size)
-        self._screensize = rect
 
-    def sound(self, samples):
+    def play(self, video):
         '''
-        play the given sound and return a handle
+        play the given video
         '''
-        sound = pygame.mixer.Sound(array=samples)
-        sound.play()
-        return sound
+        saved_fps = self.fps
+        self.fps = video.fps
 
-    def show(self, surface, scaled=False, centered=False):
+        video.audio.play()
+
+        def handle_event(event):
+            '''
+            additional event callbacks
+            '''
+            if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE
+                    or event.type == pygame.MOUSEBUTTONDOWN):
+                pygame.mixer.stop()
+                raise StopIteration
+
+        try:
+            for frame in video.frames:
+                self.process_events(handle_event)
+
+                size = self._surface.get_size()
+                rect = Rect(*video.size.size).scaled_to(size).centered_in(size)
+
+                surface = pygame.transform.smoothscale(frame, rect.size)
+
+                self.show(surface, rect.offset)
+                self.flip()
+        except StopIteration:
+            pass
+
+        self.fps = saved_fps
+
+    def show(self, surface, pos=(0, 0)):
         '''
         display the given frame data on the screen
         '''
-        rect = Rect(surface.get_width(), surface.get_height())
-        if scaled:
-            rect = rect.scaled_to(self.size)
-            surface = pygame.transform.smoothscale(surface, rect.size)
-        if centered:
-            rect = rect.centered_in(self.size)
+        self._surface.blit(surface, pos)
 
-        self._screen.blit(surface, rect.offset)
+    def process_events(self, callback=None):
+        '''
+        process events in the main loop
+        '''
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit(0)
+            elif event.type == pygame.VIDEORESIZE:
+                self.size = event.dict['size']
+            elif callback is not None:
+                callback(event)
 
     def flip(self):
         '''
-        flip the buffers and wait for the next frame
+        map the surface to the window and flip the buffers
         '''
-        self._window.blit(self._screen, self._screensize.offset)
+        size = self._window.get_size()
+        rect = Rect(*self._surface.get_size()).scaled_to(size).centered_in(size)
+
+        surface = pygame.transform.smoothscale(self._surface, rect.size)
+        self._window.blit(surface, rect.offset)
+
         pygame.display.flip()
         self._clock.tick(self._fps)
