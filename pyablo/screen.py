@@ -54,7 +54,7 @@ class Screen(object):
         rect = Rect(640, 480).scaled_to(value).centered_in(value)
 
         self._window = pygame.display.set_mode(value)
-        self._screen = pygame.Surface(rect.size)
+        self._screen = pygame.surface.Surface(rect.size)
         self._screensize = rect
 
     def sound(self, samples):
