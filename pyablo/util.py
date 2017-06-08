@@ -70,10 +70,3 @@ class Rect(object):
 
     def __repr__(self):
         return 'Rect((%d, %d), (%d, %d))' % (self._left, self._top, self._width, self._height)
-
-
-class QuitGame(Exception):
-    '''
-    raised to cleanly exit the game
-    '''
-    pass

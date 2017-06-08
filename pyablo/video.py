@@ -2,9 +2,10 @@
 This module provides methods for cutscene handling and playback
 '''
 
+import sys
 import av
 import pygame
-from pyablo.util import Rect, QuitGame
+from pyablo.util import Rect
 
 
 class Cutscene(object):
@@ -49,10 +50,11 @@ class Cutscene(object):
         for frame in self._frames():
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    raise QuitGame()
+                    sys.exit(0)
                 elif event.type == pygame.VIDEORESIZE:
                     screen.size = event.dict['size']
-                elif event.type == pygame.KEYUP or event.type == pygame.MOUSEBUTTONUP:
+                elif (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE
+                      or event.type == pygame.MOUSEBUTTONUP):
                     sound.stop()
                     return
 

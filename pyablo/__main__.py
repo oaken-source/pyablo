@@ -2,6 +2,7 @@
 This module is the entry point of pyablo
 '''
 
+import sys
 import pygame
 from pyablo.resources import Resources
 from pyablo.video import Cutscene
@@ -30,11 +31,11 @@ def main():
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                raise QuitGame()
+                sys.exit(0)
             elif event.type == pygame.VIDEORESIZE:
                 screen.size = event.dict['size']
-                screen.show(frame, scaled=True, centered=True)
 
+        screen.show(frame, scaled=True, centered=True)
         screen.flip()
 
     raise NotImplementedError('it ends here')

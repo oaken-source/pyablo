@@ -20,7 +20,9 @@ class Screen(object):
         self._fps = 60
         self._clock = pygame.time.Clock()
 
+        self._window = None
         self._screen = None
+        self._screensize = None
         self.size = (640, 480)
 
     @property
@@ -49,7 +51,11 @@ class Screen(object):
         '''
         set the current screen resolution
         '''
-        self._screen = pygame.display.set_mode(value)
+        rect = Rect(640, 480).scaled_to(value).centered_in(value)
+
+        self._window = pygame.display.set_mode(value)
+        self._screen = pygame.Surface(rect.size)
+        self._screensize = rect
 
     def sound(self, samples):
         '''
@@ -76,5 +82,6 @@ class Screen(object):
         '''
         flip the buffers and wait for the next frame
         '''
+        self._window.blit(self._screen, self._screensize.offset)
         pygame.display.flip()
         self._clock.tick(self._fps)
