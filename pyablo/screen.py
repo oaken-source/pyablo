@@ -4,6 +4,7 @@ This module provides management methods for the pygame screen
 
 import sys
 import pygame
+from pyablo.cursor import Cursor
 from pyablo.geometry import Rect
 
 
@@ -22,11 +23,13 @@ class Screen(object):
         self._fps = 60
         self._clock = pygame.time.Clock()
 
-        self._native = (640, 480)
+        native = (640, 480)
 
-        self._surface = pygame.surface.Surface(self._native)
+        self._surface = pygame.surface.Surface(native)
         self._window = None
-        self.size = self._native
+        self.size = native
+
+        self._cursor = Cursor()
 
     @property
     def fps(self):
@@ -56,6 +59,13 @@ class Screen(object):
         '''
         self._window = pygame.display.set_mode(value)
 
+    @property
+    def cursor(self):
+        '''
+        get the window cursor
+        '''
+        return self._cursor
+
     def play(self, video):
         '''
         play the given video
@@ -71,7 +81,6 @@ class Screen(object):
             '''
             if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE
                     or event.type == pygame.MOUSEBUTTONDOWN):
-                pygame.mixer.stop()
                 raise StopIteration
 
         try:
@@ -86,7 +95,7 @@ class Screen(object):
                 self.show(surface, rect.offset)
                 self.flip()
         except StopIteration:
-            pass
+            pygame.mixer.stop()
 
         self.fps = saved_fps
 
@@ -112,10 +121,13 @@ class Screen(object):
         '''
         map the surface to the window and flip the buffers
         '''
+        surface = self._surface.copy()
+        self._cursor.update(surface)
+
         size = self._window.get_size()
         rect = Rect(*self._surface.get_size()).scaled_to(size).centered_in(size)
 
-        surface = pygame.transform.smoothscale(self._surface, rect.size)
+        surface = pygame.transform.smoothscale(surface, rect.size)
         self._window.blit(surface, rect.offset)
 
         pygame.display.flip()

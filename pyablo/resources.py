@@ -17,6 +17,10 @@ _NAMED_RESOURCES = {
     'intro_cinematic.smk':      'File00001475.smk',
     # image files
     'intro_splash.pcx':         'File00000000.pcx',
+    'logo_flames_large.pcx':    'File00000019.pcx',
+    'logo_flames_medium.pcx':   'File00000022.pcx',
+    'logo_flames_small.pcx':    'File00000034.pcx',
+    'cursor.pcx':               'File00002905.pcx',
 }
 
 

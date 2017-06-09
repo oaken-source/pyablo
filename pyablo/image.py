@@ -32,3 +32,10 @@ class Image(object):
         produce the size of the image
         '''
         return self._size
+
+    def set_colorkey(self, pos=(0, 0)):
+        '''
+        key out color from the image
+        '''
+        pos = (pos[0] % self._size.width, pos[1] % self._size.height)
+        self._frame.set_colorkey(self._frame.get_at(pos))

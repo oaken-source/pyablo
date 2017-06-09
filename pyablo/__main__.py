@@ -16,17 +16,23 @@ def main():
     # initialize pygame
     screen = Screen('Diablo')
     screen.fps = 30
+    screen.cursor.visible = False
 
     # play intro
     screen.play(Resources.open('intro_logos.smk'))
     screen.play(Resources.open('intro_cinematic.smk'))
 
     # display splash screen
-    screen.show(Resources.open('intro_splash.pcx').frame)
-
+    splash = Resources.open('intro_splash.pcx')
+    screen.show(splash.frame)
     while True:
         screen.process_events()
         screen.flip()
+
+    # enable the cursor
+    screen.cursor.image = Resources.open('cursor.pcx')
+    screen.cursor.image.set_colorkey((0, -1))
+    screen.cursor.visible = True
 
     raise NotImplementedError('it ends here')
 
