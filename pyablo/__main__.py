@@ -15,7 +15,7 @@ def main():
 
     # initialize pygame
     screen = Screen('Diablo')
-    screen.fps = 30
+    screen.fps = 20
     screen.cursor.visible = False
 
     # play intro
@@ -24,8 +24,12 @@ def main():
 
     # display splash screen
     splash = Resources.open('intro_splash.pcx')
-    screen.show(splash.frame)
+    logo = Resources.open('logo_flames_large.pcx')
+    logo.set_colorkey()
+    animation = logo.split_frames(15)
     while True:
+        screen.show(splash.frame)
+        screen.show(next(animation), (45, 182))
         screen.process_events()
         screen.flip()
 
