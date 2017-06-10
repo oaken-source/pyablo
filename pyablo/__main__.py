@@ -22,6 +22,9 @@ def main():
     screen.cursor.image = cursor
 
     # load the first scene
+    screen.scenes.push('main_menu')
+    screen.scenes.push('intro_splash')
+    screen.scenes.push('intro_cinematic')
     screen.scenes.push('intro_logos')
 
     # start the main loop

@@ -32,6 +32,9 @@ class Screen(object):
         self._scenes = SceneStack(self)
         self._cursor = Cursor()
 
+        self._font = pygame.font.SysFont("monospace", 15)
+
+
     @property
     def size(self):
         '''
@@ -72,10 +75,20 @@ class Screen(object):
         rect = Rect(*native).scaled_to(window).centered_in(window)
 
         surface = pygame.transform.smoothscale(surface, rect.size)
+
+        label = self._font.render("fps: %.1f" % self._clock.get_fps(), 1, (255, 255, 255))
+        surface.blit(label, (10, 10))
+
         self._window.blit(surface, rect.offset)
 
         pygame.display.flip()
         self._clock.tick(MAX_FPS)
+
+    def clear(self):
+        '''
+        clear the display
+        '''
+        self._surface.fill((0, 0, 0))
 
     def blit(self, surface, pos=(0, 0)):
         '''
@@ -87,7 +100,7 @@ class Screen(object):
         '''
         seize control of the main loop
         '''
-        while True:
+        while self._scenes:
             scene = self._scenes.peek()
 
             try:

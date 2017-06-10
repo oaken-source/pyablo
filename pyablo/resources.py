@@ -12,15 +12,23 @@ _ERROR_OPEN_FAILED = 'unable to open resources file - incomplete installation?'
 
 
 _NAMED_RESOURCES = {
-    # video files
+    # videos
     'intro_logos.smk':          'File00002910.smk',
     'intro_cinematic.smk':      'File00001475.smk',
-    # image files
+    # images
+    'cursor.pcx':               'File00002905.pcx',
+    'glyph_xlarge_gold.pcx':    'File00000017.pcx',
+    'glyph_xlarge_grey.pcx':    'File00000018.pcx',
+    'glyph_large_gold.pcx':     'File00000008.pcx',
+    'glyph_large_grey.pcx':     'File00000009.pcx',
+    'glyph_medium_gold.pcx':    'File00000011.pcx',
+    'glyph_medium_grey.pcx':    'File00000012.pcx',
+    'glyph_small_gold.pcx':     'File00000014.pcx',
+    'glyph_small_grey.pcx':     'File00000015.pcx',
     'intro_splash.pcx':         'File00000000.pcx',
     'logo_flames_large.pcx':    'File00000019.pcx',
     'logo_flames_medium.pcx':   'File00000022.pcx',
     'logo_flames_small.pcx':    'File00000034.pcx',
-    'cursor.pcx':               'File00002905.pcx',
     'menu_background.pcx':      'File00000020.pcx',
 }
 

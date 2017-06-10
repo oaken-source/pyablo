@@ -32,6 +32,8 @@ class SceneStack(object):
         '''
         push to the stack and invoke callbacks
         '''
+        self._screen.clear()
+
         scene = self._scenedir[value](self._screen)
         scene.screen = self._screen
 
@@ -50,10 +52,19 @@ class SceneStack(object):
         '''
         pop from the stack and invoke callbacks
         '''
+        self._screen.clear()
+
         scene = self._stack.pop()
         scene.on_stop()
-        self._stack[-1].on_resume()
+        if self._stack:
+            self._stack[-1].on_resume()
         return scene
+
+    def __bool__(self):
+        '''
+        produce a boolean representation of the scene stack
+        '''
+        return bool(self._stack)
 
 
 class Scene(object):

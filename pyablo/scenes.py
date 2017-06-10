@@ -7,7 +7,7 @@ from pyablo.resources import Resources
 from pyablo.scene import Scene, VideoSceneObject, ImageSceneObject, AnimationSceneObject
 
 
-def intro_logos(screen):
+def intro_logos(_screen):
     '''
     show the blizzard logos
     '''
@@ -24,8 +24,6 @@ def intro_logos(screen):
         finish callback
         '''
         pygame.mixer.stop()
-        screen.scenes.push('intro_splash')
-        screen.scenes.push('intro_cinematic')
 
     return Scene(
         [
@@ -63,7 +61,7 @@ def intro_cinematic(_screen):
         cursor_visible=False)
 
 
-def intro_splash(screen):
+def intro_splash(_screen):
     '''
     show the intro splash screen
     '''
@@ -75,18 +73,18 @@ def intro_splash(screen):
                 event.type == pygame.MOUSEBUTTONDOWN):
             raise StopIteration
 
+    def on_resume(scene):
+        '''
+        resume callback
+        '''
+        scene.start_time = pygame.time.get_ticks()
+
     def on_update(scene):
         '''
         update callback
         '''
         if scene.elapsed_time > 4000:  # ms
             raise StopIteration
-
-    def on_stop(_scene):
-        '''
-        finish callback
-        '''
-        screen.scenes.push('main_menu')
 
     splash = Resources.open('intro_splash.pcx')
     logo = Resources.open('logo_flames_large.pcx', colorkey=(0, 0))
@@ -98,8 +96,8 @@ def intro_splash(screen):
             AnimationSceneObject(logo, pos=(45, 182)),
         ],
         on_event=on_event,
+        on_resume=on_resume,
         on_update=on_update,
-        on_stop=on_stop,
         cursor_visible=False)
 
 
@@ -113,6 +111,8 @@ def main_menu(screen):
         '''
         if event.type in (pygame.KEYDOWN, pygame.MOUSEMOTION, pygame.MOUSEBUTTONDOWN):
             scene.start_time = pygame.time.get_ticks()
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            raise StopIteration
 
     def on_update(scene):
         '''
@@ -128,10 +128,13 @@ def main_menu(screen):
         scene.start_time = pygame.time.get_ticks()
 
     background = Resources.open('menu_background.pcx')
+    logo = Resources.open('logo_flames_medium.pcx', colorkey=(0, 0))
+    logo.animate(fps=20, length=15)
 
     return Scene(
         [
             ImageSceneObject(background),
+            AnimationSceneObject(logo, pos=(125, 0)),
         ],
         on_update=on_update,
         on_event=on_event,
