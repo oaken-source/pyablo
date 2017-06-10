@@ -13,32 +13,19 @@ def main():
     # initialize the game resources
     Resources.load('resources/diabdat.mpq')
 
-    # initialize pygame
+    # initialize the screen
     screen = Screen('Diablo')
-    screen.fps = 20
-    screen.cursor.visible = False
+    screen.scenes.load('pyablo.scenes')
 
-    # play intro
-    screen.play(Resources.open('intro_logos.smk'))
-    screen.play(Resources.open('intro_cinematic.smk'))
+    # initialize the cursor
+    cursor = Resources.open('cursor.pcx', colorkey=(0, -1))
+    screen.cursor.image = cursor
 
-    # display splash screen
-    splash = Resources.open('intro_splash.pcx')
-    logo = Resources.open('logo_flames_large.pcx')
-    logo.set_colorkey()
-    animation = logo.split_frames(15)
-    while True:
-        screen.show(splash.frame)
-        screen.show(next(animation), (45, 182))
-        screen.process_events()
-        screen.flip()
+    # load the first scene
+    screen.scenes.push('intro_logos')
 
-    # enable the cursor
-    screen.cursor.image = Resources.open('cursor.pcx')
-    screen.cursor.image.set_colorkey((0, -1))
-    screen.cursor.visible = True
-
-    raise NotImplementedError('it ends here')
+    # start the main loop
+    screen.start()
 
 
 if __name__ == '__main__':

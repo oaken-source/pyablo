@@ -21,6 +21,7 @@ _NAMED_RESOURCES = {
     'logo_flames_medium.pcx':   'File00000022.pcx',
     'logo_flames_small.pcx':    'File00000034.pcx',
     'cursor.pcx':               'File00002905.pcx',
+    'menu_background.pcx':      'File00000020.pcx',
 }
 
 
@@ -54,14 +55,14 @@ class Resources(object):
             raise ValueError(_ERROR_UNITIALIZED) from ex
 
     @classmethod
-    def open(cls, resource):
+    def open(cls, resource, *args, **kwargs):
         '''
         return the queried resource as a game object
         '''
         res = cls._open(resource)
 
         if resource.endswith('.smk'):
-            return Video(res)
+            return Video(res, *args, **kwargs)
         elif resource.endswith('.pcx'):
-            return Image(res)
+            return Image(res, *args, **kwargs)
         return res
