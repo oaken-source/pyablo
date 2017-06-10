@@ -2,6 +2,7 @@
 This module provides a set of utility classes
 '''
 
+
 class Rect(object):
     '''
     a simple rectangle class plus a list of convenience functions

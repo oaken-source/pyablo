@@ -15,8 +15,8 @@ def intro_logos(screen):
         '''
         event callbacks
         '''
-        if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE
-                or event.type == pygame.MOUSEBUTTONDOWN):
+        if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE or
+                event.type == pygame.MOUSEBUTTONDOWN):
             raise StopIteration
 
     def on_stop(_scene):
@@ -44,8 +44,8 @@ def intro_cinematic(_screen):
         '''
         event callbacks
         '''
-        if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE
-                or event.type == pygame.MOUSEBUTTONDOWN):
+        if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE or
+                event.type == pygame.MOUSEBUTTONDOWN):
             raise StopIteration
 
     def on_stop(_scene):
@@ -71,15 +71,15 @@ def intro_splash(screen):
         '''
         event callbacks
         '''
-        if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE
-                or event.type == pygame.MOUSEBUTTONDOWN):
+        if (event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE or
+                event.type == pygame.MOUSEBUTTONDOWN):
             raise StopIteration
 
     def on_update(scene):
         '''
         update callback
         '''
-        if scene.elapsed_time > 4000: #ms
+        if scene.elapsed_time > 4000:  # ms
             raise StopIteration
 
     def on_stop(_scene):
@@ -118,7 +118,7 @@ def main_menu(screen):
         '''
         update callback
         '''
-        if scene.elapsed_time > 30000: #ms
+        if scene.elapsed_time > 30000:  # ms
             screen.scenes.push('intro_cinematic')
 
     def on_resume(scene):
@@ -134,4 +134,5 @@ def main_menu(screen):
             ImageSceneObject(background),
         ],
         on_update=on_update,
+        on_event=on_event,
         on_resume=on_resume)
