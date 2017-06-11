@@ -11,7 +11,7 @@ class Video(object):
     '''
     a helper class for dealing with cutscenes
     '''
-    def __init__(self, resource, fps=15):
+    def __init__(self, resource, fps):
         '''
         constructor - decode audio and video
         '''

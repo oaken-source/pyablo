@@ -87,8 +87,7 @@ def intro_splash(_screen):
             raise StopIteration
 
     splash = Resources.open('intro_splash.pcx')
-    logo = Resources.open('logo_flames_large.pcx', colorkey=(0, 0))
-    logo.animate(fps=20, length=15)
+    logo = Resources.open('logo_flames_large.pcx')
 
     return Scene(
         [
@@ -128,8 +127,7 @@ def main_menu(screen):
         scene.start_time = pygame.time.get_ticks()
 
     background = Resources.open('menu_background.pcx')
-    logo = Resources.open('logo_flames_medium.pcx', colorkey=(0, 0))
-    logo.animate(fps=20, length=15)
+    logo = Resources.open('logo_flames_medium.pcx')
 
     return Scene(
         [

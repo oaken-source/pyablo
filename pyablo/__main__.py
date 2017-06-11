@@ -18,10 +18,9 @@ def main():
     screen.scenes.load('pyablo.scenes')
 
     # initialize the cursor
-    cursor = Resources.open('cursor.pcx', colorkey=(0, -1))
-    screen.cursor.image = cursor
+    screen.cursor.image = Resources.open('cursor.pcx')
 
-    # load the first scene
+    # push the first scenes
     screen.scenes.push('main_menu')
     screen.scenes.push('intro_splash')
     screen.scenes.push('intro_cinematic')

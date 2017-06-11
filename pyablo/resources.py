@@ -11,25 +11,59 @@ _ERROR_UNITIALIZED = 'Resources.open called, but resource store uninitialized.'
 _ERROR_OPEN_FAILED = 'unable to open resources file - incomplete installation?'
 
 
+class Resource(object):
+    '''
+    simple helper class to keep track of resource properties
+    '''
+    def __init__(self, name, *args, **kwargs):
+        '''
+        constructor
+        '''
+        self._name = name
+        self._args = args
+        self._kwargs = kwargs
+
+    @property
+    def name(self):
+        '''
+        produce the resource name
+        '''
+        return self._name
+
+    @property
+    def args(self):
+        '''
+        produce the resource args
+        '''
+        return self._args
+
+    @property
+    def kwargs(self):
+        '''
+        produce the resource kwargs
+        '''
+        return self._kwargs
+
+
 _NAMED_RESOURCES = {
     # videos
-    'intro_logos.smk':          'File00002910.smk',
-    'intro_cinematic.smk':      'File00001475.smk',
+    'intro_logos.smk':          Resource('File00002910.smk', fps=15),
+    'intro_cinematic.smk':      Resource('File00001475.smk', fps=15),
     # images
-    'cursor.pcx':               'File00002905.pcx',
-    'glyph_xlarge_gold.pcx':    'File00000017.pcx',
-    'glyph_xlarge_grey.pcx':    'File00000018.pcx',
-    'glyph_large_gold.pcx':     'File00000008.pcx',
-    'glyph_large_grey.pcx':     'File00000009.pcx',
-    'glyph_medium_gold.pcx':    'File00000011.pcx',
-    'glyph_medium_grey.pcx':    'File00000012.pcx',
-    'glyph_small_gold.pcx':     'File00000014.pcx',
-    'glyph_small_grey.pcx':     'File00000015.pcx',
-    'intro_splash.pcx':         'File00000000.pcx',
-    'logo_flames_large.pcx':    'File00000019.pcx',
-    'logo_flames_medium.pcx':   'File00000022.pcx',
-    'logo_flames_small.pcx':    'File00000034.pcx',
-    'menu_background.pcx':      'File00000020.pcx',
+    'cursor.pcx':               Resource('File00002905.pcx', colorkey=(0, -1)),
+    'glyph_xlarge_gold.pcx':    Resource('File00000017.pcx'),
+    'glyph_xlarge_grey.pcx':    Resource('File00000018.pcx'),
+    'glyph_large_gold.pcx':     Resource('File00000008.pcx'),
+    'glyph_large_grey.pcx':     Resource('File00000009.pcx'),
+    'glyph_medium_gold.pcx':    Resource('File00000011.pcx'),
+    'glyph_medium_grey.pcx':    Resource('File00000012.pcx'),
+    'glyph_small_gold.pcx':     Resource('File00000014.pcx'),
+    'glyph_small_grey.pcx':     Resource('File00000015.pcx'),
+    'intro_splash.pcx':         Resource('File00000000.pcx'),
+    'logo_flames_large.pcx':    Resource('File00000019.pcx', colorkey=(0, 0), fps=20, count=15),
+    'logo_flames_medium.pcx':   Resource('File00000022.pcx', colorkey=(0, 0), fps=20, count=15),
+    'logo_flames_small.pcx':    Resource('File00000034.pcx', colorkey=(0, 0), fps=20, count=15),
+    'menu_background.pcx':      Resource('File00000020.pcx'),
 }
 
 
@@ -50,27 +84,33 @@ class Resources(object):
             raise OSError(_ERROR_OPEN_FAILED) from ex
 
     @classmethod
-    def _open(cls, resource):
+    def _open(cls, name):
         '''
-        return the queried resource as a file-like object
+        produce a resource from the given name
         '''
-        if resource in _NAMED_RESOURCES:
-            resource = _NAMED_RESOURCES[resource]
-
         try:
-            return cls._mpq.open(resource)
+            return cls._mpq.open(name)
         except AttributeError as ex:
             raise ValueError(_ERROR_UNITIALIZED) from ex
 
     @classmethod
-    def open(cls, resource, *args, **kwargs):
+    def fopen(cls, name):
+        '''
+        return the queried resource as a file-like object
+        '''
+        resource = _NAMED_RESOURCES.get(name, Resource(name))
+        return cls._open(resource.name)
+
+    @classmethod
+    def open(cls, name):
         '''
         return the queried resource as a game object
         '''
-        res = cls._open(resource)
+        resource = _NAMED_RESOURCES.get(name, Resource(name))
+        data = cls._open(resource.name)
 
-        if resource.endswith('.smk'):
-            return Video(res, *args, **kwargs)
-        elif resource.endswith('.pcx'):
-            return Image(res, *args, **kwargs)
-        return res
+        if resource.name.endswith('.smk'):
+            return Video(data, *resource.args, **resource.kwargs)
+        elif resource.name.endswith('.pcx'):
+            return Image(data, *resource.args, **resource.kwargs)
+        return data

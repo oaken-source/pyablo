@@ -10,19 +10,22 @@ class Image(object):
     '''
     a helper class for dealing with image files
     '''
-    def __init__(self, resource, colorkey=None):
+    def __init__(self, resource, colorkey=None, fps=None, count=None):
         '''
         constructor - store resource for later use
         '''
         self._resource = resource
 
         self._frame = pygame.image.load(self._resource)
-        self._animation = None
         self._size = Rect(*self._frame.get_size())
 
         if colorkey is not None:
             pos = (colorkey[0] % self._size.width, colorkey[1] % self._size.height)
             self._frame.set_colorkey(self._frame.get_at(pos))
+        if fps is not None and count is not None:
+            self._fps = fps
+            self._count = count
+            self._animate()
 
     @property
     def frame(self):
@@ -43,24 +46,20 @@ class Image(object):
         '''
         produce the fps of the anmiated image
         '''
-        if self._animation is None:
-            raise ValueError('image is not animated')
-        return self._animation[0]
+        return self._fps
 
     @property
     def frames(self):
         '''
         produce the frame generator of the animated image
         '''
-        if self._animation is None:
-            raise ValueError('image is not animated')
-        return self._animation[1]
+        return self._frames
 
-    def animate(self, fps, length):
+    def _animate(self):
         '''
         split a single image into an animation
         '''
-        height = self._size.height / length
+        height = self._size.height / self._count
         surface = pygame.surface.Surface((self._size.width, height))
         surface.set_colorkey(self._frame.get_colorkey())
 
@@ -71,7 +70,7 @@ class Image(object):
             i = 0
             while True:
                 surface.blit(self._frame, (0, -height * i))
-                i = (i + 1) % length
+                i = (i + 1) % self._count
                 yield surface
 
-        self._animation = (fps, frames())
+        self._frames = frames()
