@@ -71,10 +71,13 @@ class Screen(object):
         surface = self._native_surface.copy()
         self._debug.draw(surface)
 
+        # FIXME: smoothscale is blocked by https://github.com/pygame/pygame/issues/339
         pygame.transform.scale(
             surface,
             self._window_surface.get_size(),
             self._window_surface)
+
+        self._cursor.draw(self._window_surface)
 
         # swap buffers and to next frame
         pygame.display.flip()

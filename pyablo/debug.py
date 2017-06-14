@@ -47,7 +47,6 @@ class DebugOverlay(object):
             return
 
         fps = "fps: %.1f" % Game.clock.get_fps()
-
         label = self._font.render(fps, 1, (255, 255, 255))
         surface.blit(label, (10, 10))
 

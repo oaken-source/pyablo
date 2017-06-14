@@ -3,6 +3,7 @@ This module provides management code for the screen cursor
 '''
 
 import pygame
+from pygame import Rect
 
 
 class CursorOverlay(object):
@@ -50,5 +51,15 @@ class CursorOverlay(object):
         '''
         draw the cursor unconditionally
         '''
+        rect = Rect(surface.get_abs_offset(), surface.get_size())
+        pos = pygame.mouse.get_pos()
+
+        clipped = (
+            min(max(pos[0], rect.left), rect.right),
+            min(max(pos[1], rect.top), rect.bottom))
+
+        if pos != clipped:
+            pygame.mouse.set_pos(clipped)
+
         if self._visible and self._image is not None:
-            surface.blit(self._image.surface, pygame.mouse.get_pos())
+            surface.blit(self._image.surface, (clipped[0] - rect.left, clipped[1] - rect.top))

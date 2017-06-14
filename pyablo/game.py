@@ -52,6 +52,7 @@ class Game(object, metaclass=MetaGame):
     _clock = None
     _screen = None
     _scenes = None
+    _fps_unlocked = False
     _max_fps = 0
 
     @classmethod
@@ -90,6 +91,8 @@ class Game(object, metaclass=MetaGame):
                         cls.screen.resize(event.dict['size'])
                     elif event.type == pygame.KEYUP and event.key == pygame.K_HASH:
                         cls.screen.debug.visible = not cls.screen.debug.visible
+                    elif event.type == pygame.KEYUP and event.key == pygame.K_EXCLAIM:
+                        cls._fps_unlocked = not cls._fps_unlocked
                     else:
                         scene.on_event(event)
 
@@ -98,6 +101,6 @@ class Game(object, metaclass=MetaGame):
 
                 # flip the buffers at the given maximum refresh rate
                 cls.screen.flip()
-                cls._clock.tick(cls._max_fps)
+                cls._clock.tick(0 if cls._fps_unlocked else cls._max_fps)
             except StopIteration:
                 Game.scenes.pop()
