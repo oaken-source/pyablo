@@ -4,10 +4,11 @@ This module provides methods for video handling
 
 import av
 import pygame
-from pyablo.geometry import Rect
+from pyablo.scene import SceneObject
+from pyablo.game import Game
 
 
-class Video(object):
+class Video(SceneObject):
     '''
     a helper class for dealing with cutscenes
     '''
@@ -15,8 +16,11 @@ class Video(object):
         '''
         constructor - decode audio and video
         '''
+        super(Video, self).__init__()
+
         self._resource = resource
         self._fps = fps
+        self._elapsed = 0
 
         # decode the audio stream
         self._resource.seek(0)
@@ -34,38 +38,24 @@ class Video(object):
         self._resource.seek(0)
         data = av.open(self._resource)
 
-        self._size = Rect(data.streams.video[0].format.width, data.streams.video[0].format.height)
         self._frames = (
             pygame.image.frombuffer(
                 frame.to_nd_array(format='rgb24'),
-                self._size.size,
+                (frame.width, frame.height),
                 'RGB')
             for frame in data.decode(video=0))
 
-    @property
-    def fps(self):
-        '''
-        produce the fps of the video
-        '''
-        return self._fps
+        self.surface = next(self._frames)
+        self.rect = self.surface.get_rect()
 
-    @property
-    def frames(self):
+    def update(self):
         '''
-        a generator for the frames of the video as numpy arrays
+        update the video on screen
         '''
-        return self._frames
+        if self._elapsed == 0:
+            self._audio.play()
 
-    @property
-    def audio(self):
-        '''
-        produce the audio track of the video as mono numpy array
-        '''
-        return self._audio
-
-    @property
-    def size(self):
-        '''
-        produce the size of the video
-        '''
-        return self._size
+        self._elapsed += Game.clock.get_time()
+        if self._elapsed >= 1000.0 / self._fps:
+            self._elapsed -= 1000.0 / self._fps
+            self.surface = next(self._frames)

@@ -3,116 +3,78 @@ This module provides management methods for the pygame screen
 '''
 
 import pygame
-from pyablo.cursor import Cursor
-from pyablo.geometry import Rect
-from pyablo.scene import SceneStack
-
-
-MAX_FPS = 60
+from pyablo.cursor import CursorOverlay
+from pyablo.debug import DebugOverlay
 
 
 class Screen(object):
     '''
     manage the pygame screen
     '''
-    def __init__(self, title='pygame'):
+    def __init__(self, size):
         '''
-        constructor - initialize pygame and create the screen
+        initialize pygame and most other important things
         '''
-        pygame.mixer.pre_init(channels=1)
-        pygame.init()
-        pygame.display.set_caption(title)
+        # create a surface in native resolution as frame buffer
+        self._native_surface = pygame.surface.Surface(size)
 
-        self._clock = pygame.time.Clock()
+        # initialize the window in native resolution if possible
+        self._window = None
+        self._window_surface = None
+        self.resize(size)
 
-        self._size = (640, 480)
-        self._surface = pygame.surface.Surface(self._size)
-        self._window = pygame.display.set_mode(self._size)
-
-        self._scenes = SceneStack(self)
-        self._cursor = Cursor()
-
-        self._font = pygame.font.SysFont("monospace", 15)
-
+        # initialize the cursor
+        self._cursor = CursorOverlay()
+        # initialize the debug overlay
+        self._debug = DebugOverlay()
 
     @property
-    def size(self):
+    def surface(self):
         '''
-        get the current window resolution
+        get the drawing surface in native resolution
         '''
-        return self._size
-
-    @property
-    def clock(self):
-        '''
-        get the screen clock
-        '''
-        return self._clock
+        return self._native_surface
 
     @property
     def cursor(self):
         '''
-        get the window cursor
+        produce the cursor overlay
         '''
         return self._cursor
 
     @property
-    def scenes(self):
+    def debug(self):
         '''
-        get the scene stack
+        produce the debug overlay
         '''
-        return self._scenes
+        return self._debug
 
-    def _flip(self):
+    def resize(self, size):
+        '''
+        update the size of the window
+        '''
+        # try to resize the window to the given size
+        try:
+            self._window = pygame.display.set_mode(size)
+        except pygame.error:
+            self._window = pygame.display.set_mode()
+
+        # create the a scaled subsurface for the window surface
+        scaled = self._native_surface.get_rect().fit(self._window.get_rect())
+        self._window_surface = self._window.subsurface(scaled)
+
+    def flip(self):
         '''
         map the surface to the window and flip the buffers
         '''
-        surface = self._surface.copy()
-        self._cursor.update(surface)
+        # scale native surface to window surface
+        surface = self._native_surface.copy()
+        self._debug.draw(surface)
 
-        native = self._surface.get_size()
-        window = self._window.get_size()
-        rect = Rect(*native).scaled_to(window).centered_in(window)
+        pygame.transform.scale(
+            surface,
+            self._window_surface.get_size(),
+            self._window_surface)
 
-        surface = pygame.transform.smoothscale(surface, rect.size)
-
-        label = self._font.render("fps: %.1f" % self._clock.get_fps(), 1, (255, 255, 255))
-        surface.blit(label, (10, 10))
-
-        self._window.blit(surface, rect.offset)
-
+        # swap buffers and to next frame
         pygame.display.flip()
-        self._clock.tick(MAX_FPS)
-
-    def clear(self):
-        '''
-        clear the display
-        '''
-        self._surface.fill((0, 0, 0))
-
-    def blit(self, surface, pos=(0, 0)):
-        '''
-        display the given frame data on the screen
-        '''
-        self._surface.blit(surface, pos)
-
-    def start(self):
-        '''
-        seize control of the main loop
-        '''
-        while self._scenes:
-            scene = self._scenes.peek()
-
-            try:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        return
-                    elif event.type == pygame.VIDEORESIZE:
-                        self._window = pygame.display.set_mode(event.dict['size'])
-                    scene.on_event(event)
-
-                scene.update(self)
-
-                self._flip()
-            except StopIteration:
-                self._scenes.pop()

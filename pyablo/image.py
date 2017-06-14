@@ -2,75 +2,78 @@
 This module provides functions for image handling
 '''
 
+import itertools
 import pygame
-from pyablo.geometry import Rect
+from pygame import Rect
+from pyablo.scene import SceneObject
+from pyablo.game import Game
 
 
-class Image(object):
+class Image(SceneObject):
     '''
     a helper class for dealing with image files
     '''
-    def __init__(self, resource, colorkey=None, fps=None, count=None):
+    def __init__(self, resource, colorkey=None):
         '''
         constructor - store resource for later use
         '''
+        super(Image, self).__init__()
+
         self._resource = resource
 
-        self._frame = pygame.image.load(self._resource)
-        self._size = Rect(*self._frame.get_size())
+        self.surface = pygame.image.load(self._resource).convert()
+        self.rect = self.surface.get_rect()
 
+        # key out given color
         if colorkey is not None:
-            pos = (colorkey[0] % self._size.width, colorkey[1] % self._size.height)
-            self._frame.set_colorkey(self._frame.get_at(pos))
-        if fps is not None and count is not None:
-            self._fps = fps
-            self._count = count
-            self._animate()
+            pos = (colorkey[0] % self.rect.width, colorkey[1] % self.rect.height)
+            self.surface.set_colorkey(self.surface.get_at(pos))
 
-    @property
-    def frame(self):
-        '''
-        produce the image data
-        '''
-        return self._frame
 
-    @property
-    def size(self):
+class SolidColorImage(SceneObject):
+    '''
+    a helper class for solid color rects
+    '''
+    def __init__(self, size, color=(0, 0, 0)):
         '''
-        produce the size of the image
+        constructor
         '''
-        return self._size
+        super(SolidColorImage, self).__init__()
 
-    @property
-    def fps(self):
-        '''
-        produce the fps of the anmiated image
-        '''
-        return self._fps
+        self.surface = pygame.surface.Surface(size)
+        self.surface.fill(color)
+        self.rect = Rect((0, 0), size)
 
-    @property
-    def frames(self):
-        '''
-        produce the frame generator of the animated image
-        '''
-        return self._frames
 
-    def _animate(self):
+class AnimatedImage(Image):
+    '''
+    a base class for dealing with animated images
+    '''
+    def __init__(self, resource, colorkey, fps, count):
         '''
-        split a single image into an animation
+        constructor
         '''
-        height = self._size.height / self._count
-        surface = pygame.surface.Surface((self._size.width, height))
-        surface.set_colorkey(self._frame.get_colorkey())
+        super(AnimatedImage, self).__init__(resource, colorkey)
 
-        def frames():
-            '''
-            generate split frames from the image
-            '''
-            i = 0
-            while True:
-                surface.blit(self._frame, (0, -height * i))
-                i = (i + 1) % self._count
-                yield surface
+        self._fps = fps
+        self._elapsed = 0
 
-        self._frames = frames()
+        # split into animated frames
+        self._full_height = self.rect.height
+        self._full_surface = self.surface
+
+        self.rect.height //= count
+        self._frames = itertools.cycle(
+            self._full_surface.subsurface(0, y, *self.rect.size)
+            for y in range(0, self._full_height, self.rect.height))
+
+        self.surface = next(self._frames)
+
+    def update(self):
+        '''
+        update the animated image on screen
+        '''
+        self._elapsed += Game.clock.get_time()
+        while self._elapsed >= 1000.0 / self._fps:
+            self._elapsed -= 1000.0 / self._fps
+            self.surface = next(self._frames)

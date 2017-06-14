@@ -4,10 +4,12 @@ This module defines the scenes used in pyablo
 
 import pygame
 from pyablo.resources import Resources
-from pyablo.scene import Scene, VideoSceneObject, ImageSceneObject, AnimationSceneObject
+from pyablo.scene import Scene
+from pyablo.image import SolidColorImage
+from pyablo.game import Game
 
 
-def intro_logos(_screen):
+def intro_logos():
     '''
     show the blizzard logos
     '''
@@ -25,16 +27,19 @@ def intro_logos(_screen):
         '''
         pygame.mixer.stop()
 
+    root = SolidColorImage(Game.screen.surface.get_size())
+    video = Resources.open('intro_logos.smk')
+    video.rect = video.rect.fit(Game.screen.surface.get_rect())
+    root.add_child(video)
+
     return Scene(
-        [
-            VideoSceneObject(Resources.open('intro_logos.smk'), scaled=True, centered=True)
-        ],
+        root,
         on_event=on_event,
         on_stop=on_stop,
         cursor_visible=False)
 
 
-def intro_cinematic(_screen):
+def intro_cinematic():
     '''
     show the game intro cinematic
     '''
@@ -52,16 +57,19 @@ def intro_cinematic(_screen):
         '''
         pygame.mixer.stop()
 
+    root = SolidColorImage(Game.screen.surface.get_size())
+    video = Resources.open('intro_cinematic.smk')
+    video.rect = video.rect.fit(Game.screen.surface.get_rect())
+    root.add_child(video)
+
     return Scene(
-        [
-            VideoSceneObject(Resources.open('intro_cinematic.smk'), scaled=True, centered=True)
-        ],
+        root,
         on_event=on_event,
         on_stop=on_stop,
         cursor_visible=False)
 
 
-def intro_splash(_screen):
+def intro_splash():
     '''
     show the intro splash screen
     '''
@@ -83,24 +91,21 @@ def intro_splash(_screen):
         '''
         update callback
         '''
-        if scene.elapsed_time > 4000:  # ms
+        if scene.elapsed_time > 10000:  # ms
             raise StopIteration
 
-    splash = Resources.open('intro_splash.pcx')
-    logo = Resources.open('logo_flames_large.pcx')
+    root = Resources.open('intro_splash.pcx')
+    root.add_child(Resources.open('logo_flames_large.pcx'), pos=(45, 182))
 
     return Scene(
-        [
-            ImageSceneObject(splash),
-            AnimationSceneObject(logo, pos=(45, 182)),
-        ],
+        root,
         on_event=on_event,
         on_resume=on_resume,
         on_update=on_update,
         cursor_visible=False)
 
 
-def main_menu(screen):
+def main_menu():
     '''
     show the main menu
     '''
@@ -117,8 +122,8 @@ def main_menu(screen):
         '''
         update callback
         '''
-        if scene.elapsed_time > 30000:  # ms
-            screen.scenes.push('intro_cinematic')
+        if scene.elapsed_time > 20000:  # ms
+            Game.screen.scenes.push('intro_cinematic')
 
     def on_resume(scene):
         '''
@@ -126,14 +131,11 @@ def main_menu(screen):
         '''
         scene.start_time = pygame.time.get_ticks()
 
-    background = Resources.open('menu_background.pcx')
-    logo = Resources.open('logo_flames_medium.pcx')
+    root = Resources.open('menu_background.pcx')
+    root.add_child(Resources.open('logo_flames_medium.pcx'), pos=(125, 0))
 
     return Scene(
-        [
-            ImageSceneObject(background),
-            AnimationSceneObject(logo, pos=(125, 0)),
-        ],
+        root,
         on_update=on_update,
         on_event=on_event,
         on_resume=on_resume)

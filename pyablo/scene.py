@@ -5,25 +5,21 @@ This module provides classes to manage the scene graph stack
 import importlib
 from inspect import getmembers, isfunction
 import pygame
-from pyablo.geometry import Rect
+from pygame import Rect
+from pyablo.game import Game
 
 
 class SceneStack(object):
     '''
     custom stack class for scenes
     '''
-    def __init__(self, screen):
+    def __init__(self, module):
         '''
         constructor
         '''
-        self._screen = screen
         self._scenedir = dict()
         self._stack = list()
 
-    def load(self, module):
-        '''
-        load scenes from a module
-        '''
         mod = importlib.import_module(module)
         for (name, value) in getmembers(mod, isfunction):
             self._scenedir[name] = value
@@ -32,10 +28,7 @@ class SceneStack(object):
         '''
         push to the stack and invoke callbacks
         '''
-        self._screen.clear()
-
-        scene = self._scenedir[value](self._screen)
-        scene.screen = self._screen
+        scene = self._scenedir[value]()
 
         if self._stack:
             self._stack[-1].on_pause()
@@ -52,8 +45,6 @@ class SceneStack(object):
         '''
         pop from the stack and invoke callbacks
         '''
-        self._screen.clear()
-
         scene = self._stack.pop()
         scene.on_stop()
         if self._stack:
@@ -75,27 +66,11 @@ class Scene(object):
         '''
         constructor
         '''
-        self._screen = None
-
         self._scenegraph = scenegraph
         self._callbacks = {k: v for (k, v) in kwargs.items() if k.startswith('on_')}
         self._properties = {k: v for (k, v) in kwargs.items() if not k.startswith('on_')}
 
         self._start_time = pygame.time.get_ticks()
-
-    @property
-    def screen(self):
-        '''
-        produce the screen reference
-        '''
-        return self._screen
-
-    @screen.setter
-    def screen(self, screen):
-        '''
-        set the screen reference
-        '''
-        self._screen = screen
 
     def on_event(self, event):
         '''
@@ -115,8 +90,7 @@ class Scene(object):
         '''
         invoke the resume callback if present
         '''
-        self._screen.cursor.visible = self._properties.get('cursor_visible', True)
-
+        Game.screen.cursor.visible = self._properties.get('cursor_visible', True)
         if 'on_resume' in self._callbacks:
             self._callbacks['on_resume'](self)
 
@@ -155,91 +129,111 @@ class Scene(object):
         '''
         return pygame.time.get_ticks() - self._start_time
 
-    def update(self, screen):
+    def update(self):
         '''
         update the scene
         '''
-        for node in self._scenegraph:
-            node.update(screen)
         self.on_update()
 
+        dirty = self._scenegraph.update_tree()
+        self._scenegraph.redraw_tree(Game.screen.surface, dirty)
+        Game.screen.debug.dirty_frames.extend(dirty)
 
-class VideoSceneObject(object):
+
+class SceneObject(object):
     '''
-    a video object in the scene graph
+    a node in the scene graph
     '''
-    def __init__(self, resource, scaled=False, centered=False):
+    def __init__(self):
         '''
         constructor
         '''
-        self._resource = resource
-        self._scaled = scaled
-        self._centered = centered
-        self._elapsed = 0
-        self._frame = next(resource.frames)
+        self._rect = Rect(0, 0, 0, 0)
+        self._last_rect = self._rect.copy()
+        self._surface = None
+        self._children = []
+        self.parent = None
+        self.dirty = 1
 
-    def update(self, screen):
+    @property
+    def rect(self):
         '''
-        update the video on screen
+        produce the rect of the sceneobject
         '''
-        if self._elapsed == 0:
-            self._resource.audio.play()
+        return self._rect
 
-        self._elapsed += screen.clock.get_time()
-        if self._elapsed >= 1000.0 / self._resource.fps:
-            self._elapsed -= 1000.0 / self._resource.fps
-            self._frame = next(self._resource.frames)
-
-        surface = self._frame
-        rect = Rect(*self._frame.get_size())
-
-        if self._scaled:
-            rect = rect.scaled_to(screen.size)
-            surface = pygame.transform.smoothscale(surface, rect.size)
-        if self._centered:
-            rect = rect.centered_in(screen.size)
-
-        screen.blit(surface, rect.offset)
-
-
-class ImageSceneObject(object):
-    '''
-    an image object in the scene graph
-    '''
-    def __init__(self, resource, pos=(0, 0)):
+    @rect.setter
+    def rect(self, value):
         '''
-        constructor
+        set the rect of the sceneobject
         '''
-        self._resource = resource
-        self._pos = pos
+        self._rect = value
 
-    def update(self, screen):
+    @property
+    def surface(self):
         '''
-        update the image on screen
+        produce the surface of the sceneobject
         '''
-        screen.blit(self._resource.frame, self._pos)
+        return self._surface
 
+    @surface.setter
+    def surface(self, value):
+        '''
+        set the surface of the sceneobject
+        '''
+        self._surface = value
+        self.dirty = 1
 
-class AnimationSceneObject(object):
-    '''
-    an animated image object in the scene graph
-    '''
-    def __init__(self, resource, pos=(0, 0)):
+    def add_child(self, child, pos=None):
         '''
-        constructor
+        add a child sceneobject
         '''
-        self._resource = resource
-        self._pos = pos
-        self._elapsed = 0
-        self._frame = next(resource.frames)
+        if pos is not None:
+            child.rect.topleft = pos
 
-    def update(self, screen):
-        '''
-        update the animated image on screen
-        '''
-        self._elapsed += screen.clock.get_time()
-        if self._elapsed >= 1000.0 / self._resource.fps:
-            self._elapsed -= 1000.0 / self._resource.fps
-            self._frame = next(self._resource.frames)
+        child.dirty = 1
+        child.parent = self
+        self._children.append(child)
 
-        screen.blit(self._frame, self._pos)
+    def update(self):
+        '''
+        update method - to be overwritten by child sceneobjects
+        '''
+        pass
+
+    def update_tree(self):
+        '''
+        update method
+        '''
+        self.update()
+
+        dirty = []
+        for child in self._children:
+            dirty.extend(child.update_tree())
+
+        if self.dirty:
+            self.dirty = 0
+            return [self.rect]
+        return dirty
+
+    def redraw(self, surface, rect):
+        '''
+        redraw method
+        '''
+        source = self.surface
+        if self.rect.size != self.surface.get_size():
+            source = pygame.transform.smoothscale(source, self.rect.size)
+
+        source_rect = rect.move(-self.rect.left, -self.rect.top)
+        surface.blit(source, rect.topleft, area=source_rect)
+
+    def redraw_tree(self, surface, dirty):
+        '''
+        draw method
+        '''
+        for rect in dirty:
+            if rect.colliderect(self.rect):
+                self.redraw(surface, rect)
+
+        for child in self._children:
+            child.redraw_tree(surface, dirty)

@@ -5,7 +5,7 @@ This module provides management code for the screen cursor
 import pygame
 
 
-class Cursor(object):
+class CursorOverlay(object):
     '''
     manage the pygame cursor
     '''
@@ -15,21 +15,6 @@ class Cursor(object):
         '''
         self._visible = True
         self._image = None
-
-    @property
-    def visible(self):
-        '''
-        produce the visibility state of the cursor
-        '''
-        return self._visible
-
-    @visible.setter
-    def visible(self, value):
-        '''
-        set the visibility state of the cursor
-        '''
-        self._visible = value
-        pygame.mouse.set_visible(self._image is None and value)
 
     @property
     def image(self):
@@ -44,15 +29,26 @@ class Cursor(object):
         set the image of the cursor
         '''
         self._image = value
+        pygame.mouse.set_visible(value is None and self.visible)
 
-        if value is not None:
-            pygame.mouse.set_visible(False)
-        else:
-            pygame.mouse.set_visible(self.visible)
+    @property
+    def visible(self):
+        '''
+        get the visibility state of the cursor
+        '''
+        return self._visible
 
-    def update(self, surface):
+    @visible.setter
+    def visible(self, value):
         '''
-        update the cursor (software or hardware)
+        set the visibility state of the cursor
         '''
-        if self.image is not None and self.visible:
-            surface.blit(self.image.frame, pygame.mouse.get_pos())
+        self._visible = value
+        pygame.mouse.set_visible(self._image is None and value)
+
+    def draw(self, surface):
+        '''
+        draw the cursor unconditionally
+        '''
+        if self._visible and self._image is not None:
+            surface.blit(self._image.surface, pygame.mouse.get_pos())
