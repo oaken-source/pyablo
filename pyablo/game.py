@@ -2,6 +2,7 @@
 This module provides management methods for the pygame screen
 '''
 
+import sys
 import pygame
 
 
@@ -52,6 +53,7 @@ class Game(object, metaclass=MetaGame):
     _clock = None
     _screen = None
     _scenes = None
+
     _fps_unlocked = False
     _max_fps = 0
 
@@ -60,10 +62,8 @@ class Game(object, metaclass=MetaGame):
         '''
         initialize pygame and some other important things
         '''
-        # initialize sound control (TODO: evaluate where that should go)
-        pygame.mixer.pre_init(channels=1)
-
         # initialize pygame
+        pygame.mixer.pre_init(channels=1)
         pygame.init()
 
         # set window caption
@@ -90,13 +90,13 @@ class Game(object, metaclass=MetaGame):
                     elif event.type == pygame.VIDEORESIZE:
                         cls.screen.resize(event.dict['size'])
                     elif event.type == pygame.KEYUP and event.key == pygame.K_HASH:
-                        cls.screen.debug.visible = not cls.screen.debug.visible
+                        cls.screen.debug.enabled = not cls.screen.debug.enabled
                     elif event.type == pygame.KEYUP and event.key == pygame.K_EXCLAIM:
                         cls._fps_unlocked = not cls._fps_unlocked
                     else:
                         scene.on_event(event)
 
-                # update the scenegraph objects
+                # update the scenegraph objects and redraw
                 scene.update()
 
                 # flip the buffers at the given maximum refresh rate
@@ -104,3 +104,10 @@ class Game(object, metaclass=MetaGame):
                 cls._clock.tick(0 if cls._fps_unlocked else cls._max_fps)
             except StopIteration:
                 Game.scenes.pop()
+
+    @classmethod
+    def quit(cls):
+        '''
+        quit the game
+        '''
+        sys.exit(0)

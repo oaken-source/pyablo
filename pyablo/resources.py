@@ -3,8 +3,7 @@ This module provides game resource handling used by pyablo
 '''
 
 import mpq
-from pyablo.video import Video
-from pyablo.image import Image, AnimatedImage
+from pyablo.drawables import Video, Image, AnimatedImage
 
 
 _ERROR_UNITIALIZED = 'Resources.open called, but resource store uninitialized.'

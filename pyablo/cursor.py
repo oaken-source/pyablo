@@ -61,5 +61,8 @@ class CursorOverlay(object):
         if pos != clipped:
             pygame.mouse.set_pos(clipped)
 
+        self._image.rect.topleft = clipped
+
         if self._visible and self._image is not None:
-            surface.blit(self._image.surface, (clipped[0] - rect.left, clipped[1] - rect.top))
+            self._image.do_draw(surface, self._image.rect)
+
